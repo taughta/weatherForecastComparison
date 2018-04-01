@@ -1,0 +1,5 @@
+#Define the city ID that should be used:
+cityID=3052009
+
+#Define the API key:
+apiKey=a1ea78ddf69d1677dcce1371a13ebb95
