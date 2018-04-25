@@ -33,6 +33,7 @@ class extractForecast():
     def getForecastDates():
         with open('datafiles/forecastDateAndTimes.txt','w+') as forecastTimesFile:
             with open('dataFiles/forecastExtracted.txt', 'r') as forecastExtractedFile:
+                futuretimes = []
                 forecastFileData = forecastExtractedFile.readlines()
                 for d in range(6, 240, 6):
                     forecastTimesFile.write((forecastFileData[d])[11:-3]+'\n')
