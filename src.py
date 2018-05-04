@@ -70,7 +70,7 @@ def getWeatherForecast():
 
 # A function that extracts the following information from the previously
 # requested actual weather to be compared against the forecast data:
-# humidity, pressure, temperature, wind degree, wind speed
+# humidity, pressure, temperature, wind speed
 
 def extractActual():
     with open('dataFiles/actualWeatherPRETTY.txt', 'r') as prettyActualFile:
@@ -85,9 +85,6 @@ def extractActual():
                 elif '"temp"' in line:
                     startingPoint = line.find('"')
                     actualExtractedFile.write(line[startingPoint:])
-                elif "deg" in line:
-                    startingPoint = line.find('"')
-                    actualExtractedFile.write(line[startingPoint:])
                 elif "speed" in line:
                     startingPoint = line.find('"')
                     actualExtractedFile.write(line[startingPoint:])
@@ -96,7 +93,7 @@ def extractActual():
                     actualExtractedFile.write(line[startingPoint:])
 
 # This function extracts the following informations from the previously requested weather FORECAST::
-# forecast time, humidity, pressure, temperature, wind degree, wind speed
+# forecast time, humidity, pressure, temperature, wind speed
 
 def extractForecast():
     with open('dataFiles/forecastWeatherPRETTY.txt', 'r') as prettyForeCastFile:
@@ -114,9 +111,6 @@ def extractForecast():
                 elif '"temp"' in line:
                     startingPoint = line.find('"')
                     forecastExtractedFile.write(line[startingPoint:])
-                elif "deg" in line:
-                    startingPoint = line.find('"')
-                    forecastExtractedFile.write(line[startingPoint:])
                 elif "speed" in line:
                     startingPoint = line.find('"')
                     forecastExtractedFile.write(line[startingPoint:])
@@ -128,7 +122,7 @@ def getForecastDates():
     with open('datafiles/forecastDateAndTimes.txt', 'w+') as forecastTimesFile:
         with open('dataFiles/forecastExtracted.txt', 'r') as forecastExtractedFile:
             forecastFileData = forecastExtractedFile.readlines()
-            for d in range(0, 240, 7):
+            for d in range(0, 240, 6):
                 forecastTimesFile.write((forecastFileData[d])[11:-3] + '\n')
 
 def sleep_till_future(futureDate):
@@ -157,9 +151,7 @@ def compare(futureDate):
         actualPressure = float(actualData[1][12:-2])
         actualTemp = float(actualData[2][8:-2])
         actualDesc = str(actualData[3][16:-2])
-        actualDeg = float(actualData[4][7:-2])
-        actualSpeed = float(actualData[5][9:-1])
-
+        actualSpeed = float(actualData[4][9:-1])
 
     with open('dataFiles/forecastExtracted.txt','r') as forecastFile:
         forecastData = forecastFile.readlines()
@@ -169,17 +161,15 @@ def compare(futureDate):
                 forecastPressure = float(forecastData[s+2][12:-2])
                 forecastTemp = float(forecastData[s+3][8:-2])
                 forecastDesc = str(forecastData[s+4][16:-3])
-                forecastDeg = float(forecastData[s+5][7:-2])
-                forecastSpeed = float(forecastData[s+6][9:-1])
+                forecastSpeed = float(forecastData[s+5][9:-1])
 
     humidityDiff = round(forecastHumidity - actualHumidity)
     pressureDiff = round(forecastPressure - actualPressure)
     tempDiff = round(forecastTemp - actualTemp)
     descDiff = str(forecastDesc + " vs. " + actualDesc)
-    degDiff = round(forecastDeg - actualDeg)
     speedDiff = round(forecastSpeed - actualSpeed)
 
-    differencies = {"humidityDiff":humidityDiff,"pressureDiff":pressureDiff,"tempDiff":tempDiff,"degDiff":degDiff,"speedDiff":speedDiff}
+    differencies = {"humidityDiff":humidityDiff,"pressureDiff":pressureDiff,"tempDiff":tempDiff,"descDiff":descDiff,"speedDiff":speedDiff}
 
     with open('datafiles/comparisonResults.txt','a+') as compResultsFile:
         compResultsFile.write(str(futureDate)+"\n")
@@ -198,3 +188,86 @@ with open('datafiles/forecastDateAndTimes.txt', 'r') as forecastDatesAndTimesFil
         getActualWeather()
         extractActual()
         compare(sleepUntilDateAndTime)
+
+#creating graphs 
+import matplotlib.pyplot as plt
+import ast
+
+with open('dataFiles\comparisonResults.txt') as compFile:
+    comparisonResults = compFile.readlines()
+    allHumiDiff = []
+    allPressureDiff = []
+    allTempDiff = []
+    allSpeedDiff = []
+    singleLine = [0]
+    for i in range(1,len(comparisonResults),3):
+        # convert string formatted dictinaries to actual dictinaries then adding to lists to use it for graph creation
+        diffData = ast.literal_eval(comparisonResults[i][:-1])
+        allHumiDiff.append(diffData["humidityDiff"])
+        allPressureDiff.append(diffData["pressureDiff"])
+        allTempDiff.append(diffData["tempDiff"])
+        allSpeedDiff.append(diffData["speedDiff"])
+
+    # generate x axis integer numbers
+    xAxis = [i for i in range(0,len(allTempDiff))]
+
+    # associating strings (time passed since forecast) to X axis integers
+    xAxisString = []
+    for x in range(3, len(comparisonResults)+1,3):
+        xAxisString.append("+%ih" %x)
+
+
+    #setting the size of the graph
+    plt.figure(figsize=(15, 9))
+
+    # setting the annotation style
+    annotStyle = dict(size=10, color = 'purple', fontweight = 'bold',va = 'center', ha = 'left', bbox=dict(boxstyle = "circle",fc = 'w',pad=0.3))
+
+    # temperature graph creation
+    tempgraph = plt.subplot(4, 1, 1)
+    plt.xticks(xAxis,xAxisString)
+    plt.plot(xAxis, allTempDiff, marker = 'o', color = 'c')
+    plt.title('Temperature (forecast vs. actual)')
+    # annotating values
+    for x in range(0,len(allTempDiff)):
+        tempgraph.annotate('%i' %allTempDiff[x], xy=(xAxis[x], allTempDiff[x]), **annotStyle)
+
+    # wind speed graph creation
+    windSpeedGraph = plt.subplot(4, 1, 2)
+    plt.xticks(xAxis, xAxisString)
+    plt.plot(xAxis, allSpeedDiff, marker = 'o', color = 'm')
+    plt.title('Wind Speed (forecast vs. actual)')
+    # annotating values:
+    for w in range(0,len(allSpeedDiff)):
+        windSpeedGraph.annotate('%i' %allSpeedDiff[w], xy = (xAxis[w], allSpeedDiff[w]), **annotStyle)
+
+    # humidity graph creation
+    humidityGraph = plt.subplot(4,1,3)
+    plt.xticks(xAxis,xAxisString)
+    plt.plot(xAxis, allHumiDiff, marker = 'o', color = 'y')
+    plt.title("Humidity (forecast vs. actual)")
+    # annotating values:
+    for jh in range(0,len(allHumiDiff)):
+        humidityGraph.annotate('%i' %allHumiDiff[jh], xy = (xAxis[jh], allHumiDiff[jh]), **annotStyle)
+
+    # pressure graph creation
+    pressureGraph = plt.subplot(4, 1, 4)
+    plt.xticks(xAxis,xAxisString)
+    plt.plot(xAxis, allPressureDiff, marker = 'o', color = 'g' )
+    plt.title("Pressure (forecast vs. actual)")
+    for ko in range(0,len(allPressureDiff)):
+        pressureGraph.annotate('%i' %allPressureDiff[ko], xy = (xAxis[ko], allPressureDiff[ko]), **annotStyle)
+
+    # make it fance
+    plt.tight_layout()
+
+    # save and display the graph
+    # the graph will be displayed always, saving the graph is tried
+    try:
+        plt.savefig('weatherGraphs.png')
+    except Exception:
+        raise
+    finally:
+        plt.show()
+
+    print('The graph is saved as "weatherGraphs.png" to actual folder.\n')
