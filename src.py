@@ -122,7 +122,7 @@ def getForecastDates():
     with open('datafiles/forecastDateAndTimes.txt', 'w+') as forecastTimesFile:
         with open('dataFiles/forecastExtracted.txt', 'r') as forecastExtractedFile:
             forecastFileData = forecastExtractedFile.readlines()
-            for d in range(0, 240, 6):
+            for d in range(0, len(forecastFileData), 6):
                 forecastTimesFile.write((forecastFileData[d])[11:-3] + '\n')
 
 def sleep_till_future(futureDate):
@@ -138,7 +138,7 @@ def sleep_till_future(futureDate):
         t.hour) + ":" + str(t.minute))
     print("Sleep until (MMDDYYYY):  " + str(futureDate.month) + "." + str(futureDate.day) + "." + str(
         futureDate.year) + " " + str(futureDate.hour) + ":" + str(futureDate.minute))
-    print("I will sleep " + str(seconds_till_future) + " seconds.")
+    print("I will sleep " + str(round(seconds_till_future)) + " seconds.")
 
     time.sleep(seconds_till_future)
     print("I slept for " + str(seconds_till_future) + " seconds!")
@@ -182,7 +182,7 @@ getForecastDates()
 
 with open('datafiles/forecastDateAndTimes.txt', 'r') as forecastDatesAndTimesFile:
     futureDatesAndTimes = forecastDatesAndTimesFile.readlines()
-    for s in range(1,len(futureDatesAndTimes):
+    for s in range(1,len(futureDatesAndTimes)):
         sleepUntilDateAndTime = datetime.datetime.strptime(futureDatesAndTimes[s][0:-1], '%Y-%m-%d %H:%M:%S')
         sleep_till_future(sleepUntilDateAndTime)
         getActualWeather()
