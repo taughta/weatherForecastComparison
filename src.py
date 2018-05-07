@@ -182,7 +182,7 @@ getForecastDates()
 
 with open('datafiles/forecastDateAndTimes.txt', 'r') as forecastDatesAndTimesFile:
     futureDatesAndTimes = forecastDatesAndTimesFile.readlines()
-    for s in range(1,35):
+    for s in range(1,len(futureDatesAndTimes):
         sleepUntilDateAndTime = datetime.datetime.strptime(futureDatesAndTimes[s][0:-1], '%Y-%m-%d %H:%M:%S')
         sleep_till_future(sleepUntilDateAndTime)
         getActualWeather()
